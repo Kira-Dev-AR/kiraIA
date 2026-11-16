@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Kira IA" />
+  <title>Kira IA — Creada por Matheo</title>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #141414;
+      --border: #262626;
+      --accent: #ff2a2a;
+      --accent-dim: rgba(255, 42, 42, 0.15);
+      --text: #f0f0f0;
+      --text-muted: #888888;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; }
+    
+    body {
+      background: var(--bg);
+      color: var(--text);
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    @media (min-width: 768px) {
+      body {
+        max-width: 600px;
+        margin: 0 auto;
+        border-left: 1px solid var(--border);
+        border-right: 1px solid var(--border);
+        box-shadow: 0 0 50px rgba(0,0,0,0.9);
+      }
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      z-index: 10;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    #cubeCanvas { width: 38px; height: 38px; }
+    .brand h1 { font-size: 16px; font-weight: 700; letter-spacing: 1px; }
+    .brand span { font-size: 10px; color: var(--accent); display: block; }
+    .header-actions { display: flex; gap: 6px; }
+    .icon-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 8px;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .icon-btn:active { background: var(--accent-dim); border-color: var(--accent); }
+    #installBtn {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: bold;
+    }
+
+    #chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      user-select: text;
+    }
+    .msg {
+      max-width: 88%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      position: relative;
+    }
+    .msg.user {
+      align-self: flex-end;
+      background: var(--accent-dim);
+      border: 1px solid var(--accent);
+    }
+    .msg.ai {
+      align-self: flex-start;
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+    .msg img {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-bottom: 6px;
+      display: block;
+    }
+    .copy-btn {
+      margin-top: 8px;
+      display: inline-block;
+      font-size: 11px;
+      color: var(--text-muted);
+      background: #1f1f1f;
+      border: 1px solid var(--border);
+      padding: 4px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .copy-btn:active { color: var(--accent); border-color: var(--accent); }
+
+    #toolsMenu {
+      display: none;
+      position: absolute;
+      top: 55px;
+      right: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      width: 240px;
+      z-index: 100;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.8);
+      overflow: hidden;
+    }
+    .tool-item {
+      padding: 10px 14px;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tool-item:last-child { border-bottom: none; }
+    .tool-item:active { background: var(--accent-dim); color: var(--accent); }
+
+    #imgPreviewBar {
+      display: none;
+      padding: 8px 16px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--accent);
+    }
+
+    footer {
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      padding: 8px 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .provider-bar {
+      display: flex;
+      gap: 6px;
+    }
+    .prov-btn {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 6px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .prov-btn.active {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--text);
+    }
+    .input-row {
+      display: flex;
+      gap: 6px;
+      align-items: flex-end;
+    }
+    textarea {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      resize: none;
+      max-height: 100px;
+      outline: none;
+    }
+    textarea:focus { border-color: var(--accent); }
+    .action-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .send-btn {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: bold;
+    }
+
+    #installModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .install-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      width: 100%;
+      max-width: 360px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.9);
+    }
+    .install-box h2 { font-size: 18px; color: var(--accent); }
+    .install-box p { font-size: 13px; color: var(--text-muted); line-height: 1.4; }
+    .install-main-btn {
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .install-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 12px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <canvas id="cubeCanvas" width="76" height="76"></canvas>
+      <div>
+        <h1>KIRA IA</h1>
+        <span id="statusText">BY MATHEO // GROQ</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="installBtn" title="Instalar App">📲 Instalar</button>
+      <button class="icon-btn" id="toolsBtn" title="Funciones Pro">⚡ Pro</button>
+      <button class="icon-btn" id="cleanBtn" title="Limpiar Memoria">🧹</button>
+    </div>
+  </header>
+
+  <div id="installModal">
+    <div class="install-box">
+      <h2>Instalar Kira IA</h2>
+      <p>Llevá a Kira con vos como una aplicación independiente en tu dispositivo sin necesidad de entrar al navegador.</p>
+      <button class="install-main-btn" id="modalInstallBtn">📲 Instalar Aplicación</button>
+      <button class="install-close-btn" id="modalCloseBtn">Continuar en el navegador</button>
+    </div>
+  </div>
+
+  <div id="toolsMenu">
+    <div class="tool-item" onclick="runTool(1)">📸 1. OCR / Extraer Texto de Foto</div>
+    <div class="tool-item" onclick="runTool(2)">💻 2. Generar Script / Código Limpio</div>
+    <div class="tool-item" onclick="runTool(3)">🔍 3. Buscar Precios / Web Grounding</div>
+    <div class="tool-item" onclick="runTool(4)">🌐 4. Traducir y Localizar al Español</div>
+    <div class="tool-item" onclick="runTool(5)">📝 5. Resumir Texto Largo</div>
+    <div class="tool-item" onclick="runTool(6)">🐛 6. Explicar y Depurar Errores</div>
+    <div class="tool-item" onclick="runTool(7)">📋 7. Copiar Última Respuesta</div>
+  </div>
+
+  <main id="chat">
+    <div class="msg ai">Kira IA iniciada. Desarrollada por Matheo. ¿En qué te ayudo hoy?</div>
+  </main>
+
+  <div id="imgPreviewBar">
+    <span id="imgName">📷 Imagen adjunta lista</span>
+    <button class="icon-btn" id="removeImgBtn" style="padding:2px 8px;">✕</button>
+  </div>
+
+  <footer>
+    <div class="provider-bar">
+      <button class="prov-btn active" data-prov="groq">Groq</button>
+      <button class="prov-btn" data-prov="openrouter">OpenRouter</button>
+    </div>
+    <div class="input-row">
+      <input type="file" id="fileInput" accept="image/*" capture="environment" hidden />
+      <button class="action-btn" id="camBtn" title="Cámara / Foto">📷</button>
+      <button class="action-btn" id="micBtn" title="Dictar voz">🎤</button>
+      <textarea id="promptInput" rows="1" placeholder="Escribí a Kira..."></textarea>
+      <button class="action-btn send-btn" id="sendBtn">➤</button>
+    </div>
+  </footer>
+
+  <script>
+    // --- KEYS DIRECTAS (SIN GEMINI) ---
+    const KEYS = {
+      groq: "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",
+      openrouter: "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"
+    };
+
+    const SYSTEM_PROMPT = "Sos Kira IA, una inteligencia artificial avanzada, conversacional y con acceso a búsqueda web en tiempo real, creada y desarrollada desde cero por Matheo. Respondé de manera detallada, explayate bien, sacá conversación, sé natural y amigable. Si te preguntan quién te creó, respondé con seguridad que fue Matheo. Nunca menciones tu proveedor técnico.";
+
+    // --- CONFIGURACIÓN PWA ---
+    (function setupPWA() {
+      const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="100" fill="#0a0a0a"/><rect x="136" y="136" width="240" height="240" fill="none" stroke="#ff2a2a" stroke-width="20"/><rect x="186" y="186" width="140" height="140" fill="none" stroke="#ff2a2a" stroke-width="14"/><line x1="136" y1="136" x2="186" y2="186" stroke="#ff2a2a" stroke-width="14"/><line x1="376" y1="136" x2="326" y2="186" stroke="#ff2a2a" stroke-width="14"/><line x1="136" y1="376" x2="186" y2="326" stroke="#ff2a2a" stroke-width="14"/><line x1="376" y1="376" x2="326" y2="326" stroke="#ff2a2a" stroke-width="14"/></svg>`;
+      const iconUrl = 'data:image/svg+xml;base64,' + btoa(iconSvg);
+
+      const appleIcon = document.createElement('link');
+      appleIcon.rel = 'apple-touch-icon';
+      appleIcon.href = iconUrl;
+      document.head.appendChild(appleIcon);
+
+      const manifest = {
+        name: "Kira IA",
+        short_name: "Kira IA",
+        description: "Asistente de Inteligencia Artificial creado por Matheo",
+        start_url: location.href,
+        display: "standalone",
+        background_color: "#0a0a0a",
+        theme_color: "#0a0a0a",
+        icons: [
+          { src: iconUrl, sizes: "192x192", type: "image/svg+xml" },
+          { src: iconUrl, sizes: "512x512", type: "image/svg+xml" }
+        ]
+      };
+      const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+      const manifestLink = document.createElement('link');
+      manifestLink.rel = 'manifest';
+      manifestLink.href = URL.createObjectURL(manifestBlob);
+      document.head.appendChild(manifestLink);
+
+      if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.protocol === 'http:')) {
+        const swCode = `
+          self.addEventListener('install', e => self.skipWaiting());
+          self.addEventListener('activate', e => e.waitUntil(clients.claim()));
+          self.addEventListener('fetch', e => {});
+        `;
+        const swBlob = new Blob([swCode], { type: 'application/javascript' });
+        navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(() => {});
+      }
+    })();
+
+    let deferredPrompt;
+    const installBtn = document.getElementById('installBtn');
+    const installModal = document.getElementById('installModal');
+    const modalInstallBtn = document.getElementById('modalInstallBtn');
+    const modalCloseBtn = document.getElementById('modalCloseBtn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBtn.style.display = 'inline-block';
+      installModal.style.display = 'flex';
+    });
+
+    const triggerInstall = async () => {
+      installModal.style.display = 'none';
+      if (!deferredPrompt) {
+        alert("Para instalar la app, también podés ir al menú de tu navegador y seleccionar 'Instalar aplicación' o 'Agregar a la pantalla principal'.");
+        return;
+      }
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') installBtn.style.display = 'none';
+      deferredPrompt = null;
+    };
+
+    installBtn.onclick = triggerInstall;
+    modalInstallBtn.onclick = triggerInstall;
+    modalCloseBtn.onclick = () => installModal.style.display = 'none';
+
+    const canvas = document.getElementById('cubeCanvas');
+    const ctx = canvas.getContext('2d');
+    let angle = 0;
+    let cubeSpeed = 0.025;
+    let cubeColor = '#ff2a2a';
+
+    const points4D = [];
+    for (let x of [-1, 1]) for (let y of [-1, 1]) for (let z of [-1, 1]) for (let w of [-1, 1]) {
+      points4D.push([x, y, z, w]);
+    }
+
+    function project4D([x, y, z, w], a) {
+      let xw = x * Math.cos(a) - w * Math.sin(a);
+      let ww = x * Math.sin(a) + w * Math.cos(a);
+      let zw = z * Math.cos(a * 0.7) - ww * Math.sin(a * 0.7);
+      let wFinal = z * Math.sin(a * 0.7) + ww * Math.cos(a * 0.7);
+
+      let dist4 = 2.6;
+      let scale4 = 1 / (dist4 - wFinal);
+      let x3 = xw * scale4, y3 = y * scale4, z3 = zw * scale4;
+
+      let rx = x3 * Math.cos(a * 0.5) - z3 * Math.sin(a * 0.5);
+      let rz = x3 * Math.sin(a * 0.5) + z3 * Math.cos(a * 0.5);
+
+      let dist3 = 2.4;
+      let scale3 = 34 / (dist3 - rz);
+      return [rx * scale3 + 38, y3 * scale3 + 38];
+    }
+
+    function drawTesseract() {
+      ctx.clearRect(0, 0, 76, 76);
+      ctx.strokeStyle = cubeColor;
+      ctx.lineWidth = 1.6;
+      const projected = points4D.map(p => project4D(p, angle));
+
+      for (let i = 0; i < 16; i++) {
+        for (let j = i + 1; j < 16; j++) {
+          let diff = 0;
+          for (let k = 0; k < 4; k++) if (points4D[i][k] !== points4D[j][k]) diff++;
+          if (diff === 1) {
+            ctx.beginPath();
+            ctx.moveTo(projected[i][0], projected[i][1]);
+            ctx.lineTo(projected[j][0], projected[j][1]);
+            ctx.stroke();
+          }
+        }
+      }
+      angle += cubeSpeed;
+      requestAnimationFrame(drawTesseract);
+    }
+    drawTesseract();
+
+    let provider = 'groq';
+    let chatHistory = [];
+    let attachedBase64 = null;
+
+    const statusText = document.getElementById('statusText');
+    const chat = document.getElementById('chat');
+    const promptInput = document.getElementById('promptInput');
+    const toolsMenu = document.getElementById('toolsMenu');
+
+    function updateStatus() {
+      statusText.textContent = `BY MATHEO // ${provider.toUpperCase()}`;
+    }
+
+    document.querySelectorAll('.prov-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.prov-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        provider = btn.dataset.prov;
+        updateStatus();
+      });
+    });
+
+    function setCubeState(state) {
+      if (state === 'thinking') { cubeSpeed = 0.09; cubeColor = '#ff6b6b'; }
+      else if (state === 'error') { cubeSpeed = 0.01; cubeColor = '#ffaa00'; }
+      else { cubeSpeed = 0.025; cubeColor = '#ff2a2a'; }
+    }
+
+    document.getElementById('toolsBtn').onclick = (e) => {
+      e.stopPropagation();
+      toolsMenu.style.display = toolsMenu.style.display === 'block' ? 'none' : 'block';
+    };
+    window.onclick = () => toolsMenu.style.display = 'none';
+
+    function runTool(id) {
+      toolsMenu.style.display = 'none';
+      if (id === 1) {
+        promptInput.value = "Extraé y transcribí todo el texto que aparezca en esta imagen con exactitud.";
+        document.getElementById('camBtn').click();
+      } else if (id === 2) {
+        promptInput.value = "Escribí código limpio, optimizado y sin dependencias externas para resolver: ";
+        promptInput.focus();
+      } else if (id === 3) {
+        promptInput.value = "Buscá en la web en tiempo real y dame datos y precios exactos actuales de: ";
+        promptInput.focus();
+      } else if (id === 4) {
+        promptInput.value = "Traducí al español latino natural y explicá el contexto de: ";
+        promptInput.focus();
+      } else if (id === 5) {
+        promptInput.value = "Haceme un resumen claro estructurado en viñetas de: ";
+        promptInput.focus();
+      } else if (id === 6) {
+        promptInput.value = "Analizá este error o código, explicame por qué falla y cómo solucionarlo: ";
+        promptInput.focus();
+      } else if (id === 7) {
+        const aiMsgs = document.querySelectorAll('.msg.ai');
+        if (aiMsgs.length > 0) {
+          const lastText = aiMsgs[aiMsgs.length - 1].querySelector('span').textContent;
+          navigator.clipboard.writeText(lastText);
+          alert('¡Última respuesta copiada al portapapeles!');
+        }
+      }
+    }
+
+    document.getElementById('cleanBtn').onclick = () => {
+      chatHistory = [];
+      chat.innerHTML = '<div class="msg ai">🧹 Memoria purgada. ¿De qué charlamos?</div>';
+      updateStatus();
+    };
+
+    const fileInput = document.getElementById('fileInput');
+    document.getElementById('camBtn').onclick = () => fileInput.click();
+    document.getElementById('removeImgBtn').onclick = () => {
+      attachedBase64 = null;
+      fileInput.value = '';
+      document.getElementById('imgPreviewBar').style.display = 'none';
+    };
+
+    fileInput.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.onload = () => {
+          const c = document.createElement('canvas');
+          const maxW = 800;
+          const scale = Math.min(1, maxW / img.width);
+          c.width = img.width * scale;
+          c.height = img.height * scale;
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+          attachedBase64 = c.toDataURL('image/jpeg', 0.75);
+          document.getElementById('imgPreviewBar').style.display = 'flex';
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    };
+
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    document.getElementById('micBtn').onclick = () => {
+      if (!SpeechRec) return alert('Tu navegador no soporta dictado por voz.');
+      const rec = new SpeechRec();
+      rec.lang = 'es-AR';
+      rec.onresult = (e) => {
+        promptInput.value += (promptInput.value ? ' ' : '') + e.results[0][0].transcript;
+      };
+      rec.start();
+    };
+
+    function appendMessage(role, text, imgUrl = null) {
+      const div = document.createElement('div');
+      div.className = `msg ${role}`;
+      if (imgUrl) {
+        const img = document.createElement('img');
+        img.src = imgUrl;
+        div.appendChild(img);
+      }
+      const span = document.createElement('span');
+      span.textContent = text;
+      div.appendChild(span);
+
+      if (role === 'ai') {
+        const copy = document.createElement('button');
+        copy.className = 'copy-btn';
+        copy.textContent = 'Copiar';
+        copy.onclick = () => {
+          navigator.clipboard.writeText(text);
+          copy.textContent = '✓ Copiado';
+          setTimeout(() => copy.textContent = 'Copiar', 1500);
+        };
+        div.appendChild(document.createElement('br'));
+        div.appendChild(copy);
+      }
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const text = promptInput.value.trim();
+      if (!text && !attachedBase64) return;
+
+      const currentImg = attachedBase64;
+      appendMessage('user', text || '[Imagen enviada para análisis]', currentImg);
+      promptInput.value = '';
+      document.getElementById('removeImgBtn').click();
+
+      chatHistory.push({ role: 'user', text: text || 'Analizá esta imagen.' });
+      if (chatHistory.length > 10) chatHistory.shift();
+
+      setCubeState('thinking');
+      statusText.textContent = '🌐 PENSANDO & RESPONDIENDO...';
+
+      try {
+        let reply = '';
+
+        if (provider === 'groq') {
+          const messages = [
+            { role: 'system', content: SYSTEM_PROMPT + " Explayate con respuestas largas, detalladas, profundas y mantené una charla fluida y amigable." },
+            ...chatHistory.map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text }))
+          ];
+
+          const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${KEYS.groq}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: 'openai/gpt-oss-120b',
+              messages,
+              max_tokens: 3072,
+              temperature: 0.7
+            })
+          });
+          const data = await res.json();
+          if (data.error) throw new Error(data.error.message);
+          reply = data.choices[0].message.content;
+
+        } else if (provider === 'openrouter') {
+          const messages = [
+            { role: 'system', content: SYSTEM_PROMPT + " Sé sumamente rápido, natural, directo y conversacional." },
+            ...chatHistory.map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text }))
+          ];
+
+          const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${KEYS.openrouter}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: 'openai/gpt-oss-120b:online',
+              max_tokens: 1500,
+              temperature: 0.6,
+              messages
+            })
+          });
+          const data = await res.json();
+          if (data.error) throw new Error(data.error.message);
+          reply = data.choices[0].message.content;
+        }
+
+        chatHistory.push({ role: 'model', text: reply });
+        if (chatHistory.length > 10) chatHistory.shift();
+
+        appendMessage('ai', reply);
+        setCubeState('idle');
+        updateStatus();
+      } catch (err) {
+        setCubeState('error');
+        appendMessage('ai', `❌ Error: ${err.message}`);
+        statusText.textContent = "ERROR";
+      }
+    }
+
+    document.getElementById('sendBtn').onclick = sendMessage;
+    promptInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    });
+  </script>
+</body>
+</html>
